@@ -1,0 +1,579 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#fff6f9">
+<title>小兔背单词</title>
+<style>
+:root{
+  --pink:#ff8fb1;--pink-d:#e8668f;--pink-l:#ffe6ee;--bg:#fff6f9;--ink:#4a3a42;--mute:#a8939c;
+  --green:#6fcf3f;--green-d:#4fa82a;--green-l:#e9f9dd;--red:#ff6b81;--red-d:#e04a62;--red-l:#ffe6ea;
+  --line:#f3dbe3;--yellow:#ffc94a;--yellow-l:#fff5d9;--blue:#7cc4ff;--blue-l:#e5f4ff;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--ink);font-family:Nunito,"PingFang SC","Microsoft YaHei",sans-serif;font-weight:700}
+#app{max-width:480px;margin:0 auto;min-height:100%;display:flex;flex-direction:column;padding:16px 16px 24px}
+button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
+
+.btn{width:100%;padding:14px;border-radius:16px;font-size:17px;font-weight:900;color:#fff;background:var(--pink);box-shadow:0 4px 0 var(--pink-d);letter-spacing:1px;transition:transform .05s}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--pink-d)}
+.btn:disabled{background:#eee3e7;box-shadow:0 4px 0 #dccdd3;color:#fff;cursor:default;transform:none}
+.btn.green{background:var(--green);box-shadow:0 4px 0 var(--green-d)}
+.btn.red{background:var(--red);box-shadow:0 4px 0 var(--red-d)}
+.btn.ghost{background:#fff;color:var(--pink-d);border:2px solid var(--line);box-shadow:0 4px 0 var(--line)}
+.icon{font-size:22px;width:40px;height:40px;border-radius:12px}
+.icon:active{background:var(--pink-l)}
+.card{background:#fff;border:2px solid var(--line);border-radius:20px;padding:14px 16px;box-shadow:0 4px 0 var(--line)}
+.bar{height:14px;background:#f4e6eb;border-radius:99px;overflow:hidden;flex:1}
+.bar i{display:block;height:100%;background:var(--pink);border-radius:99px;transition:width .4s;position:relative}
+.bar i::after{content:"";position:absolute;left:8px;right:8px;top:3px;height:4px;border-radius:9px;background:rgba(255,255,255,.45)}
+
+/* home */
+.top{display:flex;align-items:center;gap:8px}
+.chip{background:#fff;border:2px solid var(--line);border-radius:99px;padding:5px 12px;font-size:15px}
+.hero{display:flex;align-items:center;gap:10px;margin:18px 0 14px}
+.bunny{font-size:64px;line-height:1;animation:hop 2.4s ease-in-out infinite;filter:drop-shadow(0 4px 0 rgba(232,102,143,.15))}
+@keyframes hop{0%,70%,100%{transform:translateY(0)}80%{transform:translateY(-10px)}90%{transform:translateY(0)}}
+.bubble{position:relative;background:#fff;border:2px solid var(--line);border-radius:18px;padding:12px 14px;font-size:15px;line-height:1.5;flex:1}
+.bubble::before{content:"";position:absolute;left:-9px;top:50%;margin-top:-8px;border:8px solid transparent;border-right-color:var(--line);border-left:0}
+.goal .row{display:flex;justify-content:space-between;margin-bottom:8px;font-size:15px}
+.goal .row span{color:var(--mute)}
+.goal .bar i{background:var(--yellow)}
+.review{margin-top:14px}
+.units{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.unit{text-align:left;background:#fff;border:2px solid var(--line);border-radius:20px;padding:14px;box-shadow:0 4px 0 var(--line);display:flex;flex-direction:column;gap:6px}
+.unit:active{transform:translateY(3px);box-shadow:0 1px 0 var(--line)}
+.unit .ic{font-size:34px;width:54px;height:54px;border-radius:16px;display:grid;place-items:center;background:var(--pink-l)}
+.unit:nth-child(6n+2) .ic{background:var(--yellow-l)}
+.unit:nth-child(6n+3) .ic{background:var(--blue-l)}
+.unit:nth-child(6n+4) .ic{background:var(--green-l)}
+.unit:nth-child(6n+5) .ic{background:#efe7ff}
+.unit:nth-child(6n) .ic{background:#ffeedd}
+.unit b{font-size:17px}
+.unit small{color:var(--mute);font-size:12px}
+.unit .bar{height:8px;flex:none}
+.unit .bar i::after{display:none}
+.unit .bar i{background:var(--green)}
+
+/* lesson */
+.lesson{display:flex;flex-direction:column;flex:1;min-height:calc(100vh - 40px)}
+.ltop{display:flex;align-items:center;gap:10px}
+.ltop .x{color:var(--mute);font-size:20px}
+.hearts{color:var(--red);font-size:16px;white-space:nowrap}
+.qbody{flex:1;padding:22px 0 16px}
+.prompt{font-size:21px;font-weight:900;margin-bottom:18px}
+.prompt .cn{color:var(--pink-d)}
+.say{display:flex;align-items:flex-end;gap:8px;margin-bottom:22px}
+.say .bunny{font-size:56px}
+.bubble2{position:relative;background:#fff;border:2px solid var(--line);border-radius:16px;padding:12px 16px;font-size:22px;text-align:left}
+.bubble2 b{font-weight:900}
+.opts{display:grid;gap:10px}
+.opt{display:flex;align-items:center;gap:12px;text-align:left;background:#fff;border:2px solid var(--line);border-radius:16px;padding:14px;font-size:18px;box-shadow:0 3px 0 var(--line)}
+.opt .k{width:26px;height:26px;border-radius:8px;border:2px solid var(--line);color:var(--mute);font-size:13px;display:grid;place-items:center;flex:none}
+.opt.sel{border-color:var(--blue);background:var(--blue-l);box-shadow:0 3px 0 var(--blue)}
+.opt.sel .k{border-color:var(--blue);color:#3a9be6}
+.opt.right{border-color:var(--green);background:var(--green-l);box-shadow:0 3px 0 var(--green)}
+.opt.bad{border-color:var(--red);background:var(--red-l);box-shadow:0 3px 0 var(--red)}
+.listen{display:flex;justify-content:center;align-items:center;gap:14px;margin:10px 0 26px}
+.bigspk{width:96px;height:96px;border-radius:26px;background:var(--blue);color:#fff;font-size:44px;box-shadow:0 5px 0 #4fa6e8}
+.bigspk:active{transform:translateY(4px);box-shadow:0 1px 0 #4fa6e8}
+.slow{width:60px;height:60px;border-radius:18px;background:#fff;border:2px solid var(--line);font-size:28px;box-shadow:0 4px 0 var(--line)}
+.intro{text-align:center;padding:26px 18px}
+.intro .en{font-size:38px;font-weight:900;margin:14px 0 4px;word-break:break-word}
+.intro .cn{font-size:22px;color:var(--pink-d);margin-bottom:14px}
+.intro .row{display:flex;justify-content:center;gap:12px}
+.intro .bigspk{width:68px;height:68px;font-size:30px;border-radius:20px}
+.intro .slow{width:68px;height:68px}
+.ex{margin-top:20px;background:var(--bg);border-radius:14px;padding:12px;text-align:left;line-height:1.6}
+.ex div{cursor:pointer}
+.ex small{color:var(--mute);font-size:14px}
+.spellhead{display:flex;gap:10px;margin-bottom:16px}
+.spellhead .spk{width:52px;height:52px;border-radius:16px;background:var(--blue);color:#fff;font-size:24px;box-shadow:0 4px 0 #4fa6e8}
+.hint{padding:0 16px;border-radius:16px;background:var(--yellow-l);border:2px solid #ffe29a;color:#b98a10;box-shadow:0 4px 0 #ffe29a}
+.ansrow{min-height:64px;border-bottom:2px solid var(--line);display:flex;flex-wrap:wrap;gap:8px;padding:8px 0;margin-bottom:22px;align-items:center}
+.ph{color:#d8c4cc;font-size:15px}
+.bank{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.tile{min-width:46px;height:50px;padding:0 12px;border-radius:14px;background:#fff;border:2px solid var(--line);box-shadow:0 3px 0 var(--line);font-size:22px;font-weight:900}
+.tile:active{transform:translateY(2px);box-shadow:0 1px 0 var(--line)}
+.tile.used{background:#f4ecef;color:transparent;box-shadow:none;border-color:#f4ecef}
+.match{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.match>div{display:grid;gap:10px}
+.mt{min-height:58px;padding:8px;border-radius:16px;background:#fff;border:2px solid var(--line);box-shadow:0 3px 0 var(--line);font-size:16px}
+.mt.sel{border-color:var(--blue);background:var(--blue-l);box-shadow:0 3px 0 var(--blue)}
+.mt.done{border-color:var(--green-l);background:var(--green-l);color:#9ccf82;box-shadow:none;pointer-events:none}
+.mt.wrong{border-color:var(--red);background:var(--red-l);animation:shake .3s}
+@keyframes shake{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.foot{margin:0 -16px -24px;padding:16px 16px 24px;border-top:2px solid transparent}
+.foot.ok{background:var(--green-l);color:var(--green-d)}
+.foot.bad{background:var(--red-l);color:var(--red-d)}
+.fbmsg{margin-bottom:12px;font-size:16px;line-height:1.5}
+.fbmsg b{font-size:21px;font-weight:900;display:block}
+
+/* result */
+.result{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:6px}
+.result .bunny{font-size:90px}
+.result h1{margin:8px 0 0;font-size:28px;color:var(--pink-d)}
+.result p{color:var(--mute);margin:4px 0 18px}
+.stats{display:flex;gap:10px;width:100%;margin-bottom:14px}
+.stat{flex:1;border-radius:16px;border:2px solid;overflow:hidden}
+.stat small{display:block;color:#fff;padding:4px;font-size:13px}
+.stat b{display:block;background:#fff;padding:10px 4px;font-size:20px}
+.stat.y{border-color:var(--yellow)}.stat.y small{background:var(--yellow)}
+.stat.g{border-color:var(--green)}.stat.g small{background:var(--green)}
+.stat.p{border-color:var(--pink)}.stat.p small{background:var(--pink)}
+.learned{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-bottom:22px}
+.learned span{background:#fff;border:2px solid var(--line);border-radius:99px;padding:4px 10px;font-size:14px}
+
+/* sheet */
+.mask{position:fixed;inset:0;background:rgba(74,58,66,.35);display:flex;align-items:flex-end;justify-content:center;z-index:9;animation:fade .2s}
+@keyframes fade{from{opacity:0}}
+.sheet{background:var(--bg);width:100%;max-width:480px;max-height:85vh;overflow:auto;border-radius:24px 24px 0 0;padding:18px 16px 28px;animation:up .25s}
+@keyframes up{from{transform:translateY(40px)}}
+.sheet h2{margin:0 0 14px;font-size:20px;display:flex;justify-content:space-between;align-items:center}
+.sheet h3{font-size:15px;color:var(--mute);margin:18px 0 8px}
+.wrow{display:flex;align-items:center;gap:10px;background:#fff;border:2px solid var(--line);border-radius:14px;padding:10px 12px;margin-bottom:8px;width:100%;text-align:left}
+.wrow .w{flex:1}
+.wrow .w small{display:block;color:var(--mute);font-size:13px}
+.dots{display:flex;gap:3px}
+.dots i{width:7px;height:7px;border-radius:9px;background:#f0e2e7}
+.dots i.on{background:var(--green)}
+.new{font-size:12px;color:var(--mute)}
+.field{width:100%;padding:12px 14px;border-radius:14px;border:2px solid var(--line);font:inherit;font-size:16px;background:#fff;color:var(--ink);outline:none}
+.field:focus{border-color:var(--pink)}
+.seg{display:flex;gap:8px}
+.seg button{flex:1;padding:12px;border-radius:14px;border:2px solid var(--line);background:#fff;font-size:16px}
+.seg button.on{border-color:var(--pink);background:var(--pink-l);color:var(--pink-d)}
+.danger{color:var(--red-d);margin-top:22px;width:100%;padding:10px;font-size:14px}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+/* ===== 词库：想加词就照格式往里加 [英文, 中文, 例句, 例句翻译] ===== */
+const UNITS = [
+  {id:'outfit', icon:'👗', title:'穿搭', sub:'Outfit', words:[
+    ['dress','连衣裙','I love this dress.','我好喜欢这条连衣裙。'],
+    ['skirt','半身裙','This skirt is too short.','这条裙子太短了。'],
+    ['jacket','外套','Take off your jacket, please.','请把外套脱下来。'],
+    ['heels','高跟鞋','My heels hurt.','我的高跟鞋好磨脚。'],
+    ['jeans','牛仔裤','Can I wear jeans?','我可以穿牛仔裤吗？'],
+    ['outfit','一套穿搭','Next outfit, please!','请换下一套！'],
+    ['size','尺码','What size are you?','你穿什么尺码？'],
+    ['fit','合身','It fits well.','这件很合身。'],
+  ]},
+  {id:'beauty', icon:'💄', title:'美妆', sub:'Beauty', words:[
+    ['makeup','化妆；妆容','My makeup is ready.','我的妆化好了。'],
+    ['lipstick','口红','Can I try a red lipstick?','我能试试红色的口红吗？'],
+    ['foundation','粉底','This foundation is too dark.','这个粉底太深了。'],
+    ['eyeliner','眼线','My eyeliner is smudged.','我的眼线晕了。'],
+    ['hairstyle','发型','I like this hairstyle.','我喜欢这个发型。'],
+    ['nails','指甲','My nails are done.','我的指甲做好了。'],
+    ['skin','皮肤','My skin is dry today.','我今天皮肤有点干。'],
+    ['perfume','香水','What perfume is this?','这是什么香水？'],
+  ]},
+  {id:'shoot', icon:'📸', title:'拍摄', sub:'Photo Shoot', words:[
+    ['photographer','摄影师','The photographer is here.','摄影师来了。'],
+    ['camera','相机；镜头','Look at the camera.','看镜头。'],
+    ['pose','摆姿势','Hold the pose!','保持这个姿势！'],
+    ['smile','微笑','Give me a little smile.','稍微笑一下。'],
+    ['lighting','灯光','The lighting is perfect.','灯光太完美了。'],
+    ['studio','摄影棚','The studio is on the third floor.','摄影棚在三楼。'],
+    ['background','背景','Stand in front of the background.','站到背景前面。'],
+    ['angle','角度','Try another angle.','换个角度试试。'],
+  ]},
+  {id:'work', icon:'💼', title:'工作', sub:'Model Work', words:[
+    ['runway','T台；秀场','Walk to the end of the runway.','走到T台尽头。'],
+    ['fitting','试装','The fitting is at ten.','试装在十点。'],
+    ['schedule','日程安排',"What's my schedule tomorrow?",'我明天的日程是什么？'],
+    ['agency','经纪公司','My agency will call you.','我的经纪公司会联系你。'],
+    ['casting','试镜','I have a casting today.','我今天有个试镜。'],
+    ['brand','品牌','I love this brand.','我很喜欢这个品牌。'],
+    ['client','客户','The client is happy.','客户很满意。'],
+    ['break','休息','Let\'s take a break.','我们休息一下吧。'],
+  ]},
+  {id:'travel', icon:'✈️', title:'旅行', sub:'Travel', words:[
+    ['passport','护照','Here is my passport.','这是我的护照。'],
+    ['flight','航班','My flight is at eight.','我的航班是八点。'],
+    ['luggage','行李','Where is my luggage?','我的行李在哪？'],
+    ['hotel','酒店',"I'm at the hotel.",'我到酒店了。'],
+    ['airport','机场','Take me to the airport, please.','请送我去机场。'],
+    ['taxi','出租车','Can you call a taxi?','能帮我叫辆出租车吗？'],
+    ['delay','延误','My flight has a delay.','我的航班延误了。'],
+    ['check in','办理入住 / 登机','I want to check in.','我想办理入住。'],
+  ]},
+  {id:'talk', icon:'💬', title:'常用句', sub:'Phrases', words:[
+    ['thank you so much','太感谢你了','Thank you so much for today!','今天太感谢你了！'],
+    ['nice to meet you','很高兴认识你',"Hi, I'm Lily. Nice to meet you!",'嗨，我是Lily，很高兴认识你！'],
+    ['excuse me','打扰一下','Excuse me, where is the restroom?','打扰一下，洗手间在哪？'],
+    ['how much is it','这个多少钱','How much is it?','这个多少钱？'],
+    ['no problem','没问题','No problem, I can wait.','没问题，我可以等。'],
+    ["I'm on my way",'我在路上了',"I'm on my way, see you soon!",'我在路上了，一会儿见！'],
+    ['see you later','回头见','See you later!','回头见！'],
+    ['one more time','再来一次',"Let's do it one more time.",'我们再来一次。'],
+  ]},
+];
+const ALL = UNITS.flatMap(u => u.words.map(([en,cn,ex,exCn]) => ({en,cn,ex,exCn,u:u.id})));
+const GOAL = 20;
+const PRAISE = ['太棒啦！','好厉害！','完美～','就是这样！','聪明的小可爱！','满分发音！'];
+const END_OK = ['今天也超级努力呢 💕','一点一点进步就很棒 🌸','小兔为你骄傲 🐰','又多会了几个词 ✨'];
+
+/* ===== 工具 ===== */
+const $ = s => document.querySelector(s);
+const app = $('#app');
+const rand = a => a[Math.floor(Math.random()*a.length)];
+const shuffle = a => { a = [...a]; for (let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]} return a; };
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const dayStr = (o=0) => { const d=new Date(); d.setDate(d.getDate()+o); return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate(); };
+
+const KEY = 'bunny_words_v1';
+let S = load();
+function load(){
+  const d = {name:'宝贝', per:3, xp:0, streak:0, last:'', today:{d:'',xp:0}, w:{}};
+  try { const r = JSON.parse(localStorage.getItem(KEY)); if (r) Object.assign(d, r); } catch(e){}
+  return d;
+}
+function save(){ try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e){} }
+const curStreak = () => (S.last===dayStr() || S.last===dayStr(-1)) ? S.streak : 0;
+const todayXp = () => S.today.d===dayStr() ? S.today.xp : 0;
+const lv = w => S.w[w.en] ? S.w[w.en].lv : -1;
+
+function speakText(t, slow){
+  try {
+    const u = new SpeechSynthesisUtterance(t);
+    u.lang = 'en-US'; u.rate = slow ? .55 : .85;
+    const vs = speechSynthesis.getVoices();
+    const v = vs.find(v => /en[-_]US/i.test(v.lang)) || vs.find(v => /^en/i.test(v.lang));
+    if (v) u.voice = v;
+    speechSynthesis.cancel(); speechSynthesis.speak(u);
+  } catch(e){}
+}
+function speakW(slow){ const q = L && L.q[0]; if (q && q.w) speakText(q.w.en, slow); }
+try { speechSynthesis.getVoices(); speechSynthesis.onvoiceschanged = () => {}; } catch(e){}
+
+let AC;
+function tone(fs){
+  try {
+    AC = AC || new (window.AudioContext || window.webkitAudioContext)();
+    const t = AC.currentTime;
+    fs.forEach((f,i) => {
+      const o = AC.createOscillator(), g = AC.createGain(), s = t + i*.09;
+      o.type = 'sine'; o.frequency.value = f;
+      g.gain.setValueAtTime(.0001, s); g.gain.exponentialRampToValueAtTime(.18, s+.02); g.gain.exponentialRampToValueAtTime(.0001, s+.25);
+      o.connect(g).connect(AC.destination); o.start(s); o.stop(s+.3);
+    });
+  } catch(e){}
+}
+const OK = [660, 990], BAD = [300, 220], DING = [880];
+
+/* ===== 首页 ===== */
+function home(){
+  L = null;
+  const tx = todayXp();
+  const seen = ALL.filter(w => S.w[w.en]);
+  const weak = seen.filter(w => S.w[w.en].lv < 3);
+  const name = esc(S.name || '宝贝');
+  const greet = tx >= GOAL ? `今天的目标完成啦！<br>${name}最棒了 💕`
+    : tx > 0 ? `${name}好努力！<br>再来一小节就达标啦 ✨`
+    : `${name}，今天学 ${S.per} 个词就好～<br>慢慢来，不着急 🌸`;
+  app.innerHTML = `
+    <div class="top">
+      <span class="chip">🔥 ${curStreak()}</span><span class="chip">⭐ ${S.xp}</span>
+      <span style="flex:1"></span>
+      <button class="icon" onclick="book()" title="单词本">📖</button>
+      <button class="icon" onclick="settings()" title="设置">⚙️</button>
+    </div>
+    <div class="hero"><div class="bunny">🐰</div><div class="bubble">${greet}</div></div>
+    <div class="card goal">
+      <div class="row"><b>今日目标</b><span>${Math.min(tx,GOAL)} / ${GOAL} XP</span></div>
+      <div class="bar"><i style="width:${Math.min(100, tx/GOAL*100)}%"></i></div>
+    </div>
+    ${seen.length ? `<button class="btn ghost review" onclick="startReview()">🔁 复习一下${weak.length ? ` · ${weak.length} 个待加强` : ''}</button>` : ''}
+    <div class="units">${UNITS.map((u,i) => {
+      const ws = ALL.filter(w => w.u===u.id);
+      const got = ws.filter(w => lv(w) >= 3).length, started = ws.some(w => lv(w) >= 0);
+      const tag = got===ws.length ? '已掌握 👑' : started ? `已掌握 ${got}/${ws.length}` : `${ws.length} 个词 · 未开始`;
+      return `<button class="unit" onclick="startUnit(${i})">
+        <span class="ic">${u.icon}</span><b>${u.title}</b><small>${u.sub} · ${tag}</small>
+        <div class="bar"><i style="width:${got/ws.length*100}%"></i></div></button>`;
+    }).join('')}</div>`;
+}
+
+function startUnit(i){
+  const ws = ALL.filter(w => w.u===UNITS[i].id);
+  const fresh = ws.filter(w => !S.w[w.en]);
+  const old = shuffle(ws.filter(w => S.w[w.en])).sort((a,b) => lv(a)-lv(b));
+  startLesson([...fresh, ...old].slice(0, S.per));
+}
+function startReview(){
+  const seen = shuffle(ALL.filter(w => S.w[w.en])).sort((a,b) => lv(a)-lv(b));
+  startLesson(seen.slice(0, Math.max(S.per, 4)));
+}
+
+/* ===== 课程 ===== */
+let L = null;
+function startLesson(words){
+  L = {words, q:[], hearts:5, done:0, correct:0, answered:0, sel:null, state:'ask'};
+  const later = [];
+  words.forEach(w => {
+    if (!S.w[w.en]) L.q.push({t:'intro', w});
+    L.q.push({t:'meaning', w});
+    later.push({t: Math.random()<.5 ? 'word' : 'listen', w}, {t:'spell', w});
+  });
+  L.q.push(...shuffle(later));
+  if (words.length >= 2) L.q.push({t:'match', ws: words.slice(0,4)});
+  renderQ();
+}
+
+function renderQ(){
+  const q = L.q[0];
+  L.sel = null; L.state = 'ask';
+  const pct = L.done / (L.done + L.q.length) * 100;
+  app.innerHTML = `<div class="lesson">
+    <div class="ltop">
+      <button class="icon x" onclick="quit()">✕</button>
+      <div class="bar"><i style="width:${pct}%"></i></div>
+      <span class="hearts">❤️ ${L.hearts}</span>
+    </div>
+    <div class="qbody" id="qb"></div>
+    <div class="foot" id="foot"></div>
+  </div>`;
+  R[q.t](q);
+}
+function footCheck(){ $('#foot').innerHTML = `<button class="btn" id="chk" disabled onclick="check()">检查</button>`; }
+
+function distract(w, f){
+  const same = shuffle(ALL.filter(x => x.u===w.u && x!==w));
+  const other = shuffle(ALL.filter(x => x.u!==w.u));
+  return [...same, ...other].slice(0,3).map(x => x[f]);
+}
+function choice(q, prompt, head, opts, ans){
+  q.opts = opts; q.ans = ans;
+  $('#qb').innerHTML = `<div class="prompt">${prompt}</div>${head}
+    <div class="opts">${opts.map((o,i) => `<button class="opt" onclick="pick(${i})"><span class="k">${i+1}</span>${esc(o)}</button>`).join('')}</div>`;
+  footCheck();
+}
+function pick(i){
+  if (L.state!=='ask') return;
+  const q = L.q[0];
+  L.sel = i;
+  document.querySelectorAll('.opt').forEach((b,j) => b.classList.toggle('sel', j===i));
+  $('#chk').disabled = false;
+  if (q.t==='word') speakText(q.opts[i]);
+}
+
+const R = {
+  intro(q){
+    const w = q.w;
+    $('#qb').innerHTML = `<div class="prompt">新单词 ✨</div>
+      <div class="card intro">
+        <div class="row"><button class="bigspk" onclick="speakW()">🔊</button><button class="slow" onclick="speakW(true)">🐢</button></div>
+        <div class="en">${esc(w.en)}</div>
+        <div class="cn">${esc(w.cn)}</div>
+        <div class="ex"><div onclick="speakText(L.q[0].w.ex)">🔊 ${esc(w.ex)}</div><small>${esc(w.exCn)}</small></div>
+      </div>`;
+    $('#foot').innerHTML = `<button class="btn" onclick="introNext()">记住啦 ✓</button>`;
+    speakW();
+  },
+  meaning(q){
+    const w = q.w;
+    choice(q, '这个词是什么意思？',
+      `<div class="say"><span class="bunny">🐰</span><button class="bubble2" onclick="speakW()">🔊 <b>${esc(w.en)}</b></button></div>`,
+      shuffle([w.cn, ...distract(w,'cn')]), w.cn);
+    speakW();
+  },
+  word(q){
+    const w = q.w;
+    choice(q, '选出对应的英文',
+      `<div class="say"><span class="bunny">🐰</span><div class="bubble2"><b>${esc(w.cn)}</b></div></div>`,
+      shuffle([w.en, ...distract(w,'en')]), w.en);
+  },
+  listen(q){
+    const w = q.w;
+    choice(q, '听一听，选出你听到的 👂',
+      `<div class="listen"><button class="bigspk" onclick="speakW()">🔊</button><button class="slow" onclick="speakW(true)">🐢</button></div>`,
+      shuffle([w.en, ...distract(w,'en')]), w.en);
+    setTimeout(speakW, 250);
+  },
+  spell(q){
+    const w = q.w, phrase = w.en.includes(' ');
+    q.target = phrase ? w.en.split(' ') : w.en.split('');
+    const bank = [...q.target];
+    if (phrase){
+      const extra = ALL.filter(x => x!==w && x.en.includes(' ')).flatMap(x => x.en.split(' ')).filter(t => !q.target.includes(t));
+      bank.push(rand(extra));
+    }
+    q.bank = shuffle(bank).map(c => ({c, used:false}));
+    q.picked = []; q.phrase = phrase;
+    $('#qb').innerHTML = `<div class="prompt">${phrase ? '拼出这句话' : '拼出这个单词'}：<span class="cn">${esc(w.cn)}</span></div>
+      <div class="spellhead"><button class="spk" onclick="speakW()">🔊</button><button class="hint" onclick="hint()">💡 提示一下</button></div>
+      <div class="ansrow" id="ans"></div><div class="bank" id="bank"></div>`;
+    footCheck(); drawSpell();
+  },
+  match(q){
+    q.left = shuffle(q.ws.map((_,i) => i)); q.right = shuffle(q.ws.map((_,i) => i));
+    q.got = 0; q.a = null;
+    $('#qb').innerHTML = `<div class="prompt">把它们配成对 💞</div><div class="match">
+      <div>${q.left.map(i => `<button class="mt" data-s="L" data-i="${i}" onclick="mtap(this)">${esc(q.ws[i].en)}</button>`).join('')}</div>
+      <div>${q.right.map(i => `<button class="mt" data-s="R" data-i="${i}" onclick="mtap(this)">${esc(q.ws[i].cn)}</button>`).join('')}</div></div>`;
+    $('#foot').innerHTML = '';
+  },
+};
+
+function introNext(){
+  const w = L.q[0].w;
+  if (!S.w[w.en]) { S.w[w.en] = {lv:0}; save(); }
+  L.q.shift(); L.done++; renderQ();
+}
+
+function drawSpell(){
+  const q = L.q[0];
+  $('#ans').innerHTML = q.picked.map((bi,k) => `<button class="tile" onclick="unpick(${k})">${esc(q.bank[bi].c)}</button>`).join('')
+    || `<span class="ph">${q.phrase ? '点下面的词块 ↓' : '点下面的字母 ↓'}</span>`;
+  $('#bank').innerHTML = q.bank.map((t,i) => `<button class="tile ${t.used?'used':''}" onclick="tapTile(${i})" ${t.used?'disabled':''}>${esc(t.c)}</button>`).join('');
+  $('#chk').disabled = q.picked.length !== q.target.length;
+}
+function tapTile(i){
+  const q = L.q[0];
+  if (L.state!=='ask' || q.bank[i].used || q.picked.length >= q.target.length) return;
+  q.bank[i].used = true; q.picked.push(i); drawSpell();
+}
+function unpick(k){
+  const q = L.q[0];
+  if (L.state!=='ask') return;
+  q.bank[q.picked[k]].used = false; q.picked.splice(k,1); drawSpell();
+}
+function hint(){
+  const q = L.q[0];
+  if (L.state!=='ask') return;
+  while (q.picked.some((bi,k) => q.bank[bi].c !== q.target[k])) { q.bank[q.picked.pop()].used = false; }
+  if (q.picked.length < q.target.length){
+    const need = q.target[q.picked.length];
+    const i = q.bank.findIndex(t => !t.used && t.c===need);
+    if (i >= 0) { q.bank[i].used = true; q.picked.push(i); }
+  }
+  drawSpell();
+}
+
+function mtap(b){
+  const q = L.q[0];
+  if (b.dataset.s==='L') speakText(q.ws[b.dataset.i].en);
+  if (q.a===b) { b.classList.remove('sel'); q.a = null; return; }
+  if (!q.a || q.a.dataset.s===b.dataset.s) { if (q.a) q.a.classList.remove('sel'); q.a = b; b.classList.add('sel'); return; }
+  const a = q.a; q.a = null; a.classList.remove('sel');
+  if (a.dataset.i===b.dataset.i){
+    a.classList.add('done'); b.classList.add('done'); tone(DING);
+    if (++q.got === q.ws.length) setTimeout(() => {
+      L.state = 'fb'; L.correct++; L.answered++; tone(OK);
+      const f = $('#foot'); f.className = 'foot ok';
+      f.innerHTML = `<div class="fbmsg"><b>全部配对成功！🎉</b></div><button class="btn green" onclick="next(true)">继续</button>`;
+    }, 300);
+  } else {
+    [a,b].forEach(x => { x.classList.add('wrong'); setTimeout(() => x.classList.remove('wrong'), 400); });
+    tone(BAD);
+  }
+}
+
+function check(){
+  const q = L.q[0];
+  if (L.state!=='ask') return;
+  let ok;
+  if (q.t==='spell'){
+    ok = q.picked.map(bi => q.bank[bi].c).join(' ') === q.target.join(' ');
+  } else {
+    if (L.sel===null) return;
+    ok = q.opts[L.sel] === q.ans;
+    document.querySelectorAll('.opt').forEach((b,j) => {
+      b.classList.remove('sel');
+      if (q.opts[j]===q.ans) b.classList.add('right'); else if (j===L.sel) b.classList.add('bad');
+    });
+  }
+  L.state = 'fb'; L.answered++;
+  const r = S.w[q.w.en] || (S.w[q.w.en] = {lv:0});
+  r.lv = ok ? Math.min(5, r.lv+1) : Math.max(0, r.lv-1);
+  save();
+  if (ok) { L.correct++; tone(OK); } else { L.hearts--; tone(BAD); }
+  if (ok && q.t!=='meaning') speakW();
+  const f = $('#foot');
+  f.className = 'foot ' + (ok ? 'ok' : 'bad');
+  f.innerHTML = `<div class="fbmsg">${ok ? `<b>${rand(PRAISE)}</b>` : `<b>差一点点～ 等下再练一次</b>正确答案：${esc(q.w.en)} = ${esc(q.w.cn)}`}</div>
+    <button class="btn ${ok?'green':'red'}" onclick="next(${ok})">继续</button>`;
+  document.querySelector('.hearts').textContent = '❤️ ' + L.hearts;
+}
+
+function next(ok){
+  const q = L.q.shift();
+  if (ok) L.done++; else L.q.push(q);
+  if (L.hearts <= 0) return finish(false);
+  if (!L.q.length) return finish(true);
+  renderQ();
+}
+
+function quit(){ if (confirm('要先休息一下吗？已经答对的会保存哦')) home(); }
+
+function finish(ok){
+  const gained = 5 + L.correct, t = dayStr();
+  S.xp += gained;
+  if (S.today.d !== t) S.today = {d:t, xp:0};
+  S.today.xp += gained;
+  if (S.last !== t) { S.streak = S.last===dayStr(-1) ? S.streak+1 : 1; S.last = t; }
+  save();
+  const acc = L.answered ? Math.round(L.correct / L.answered * 100) : 100;
+  app.innerHTML = `<div class="result">
+    <div class="bunny">${ok ? '🐰' : '😴'}</div>
+    <h1>${ok ? '完成啦！🎉' : '小红心用完啦'}</h1>
+    <p>${ok ? rand(END_OK) : '没关系，休息一下再来～答对的都记住啦'}</p>
+    <div class="stats">
+      <div class="stat y"><small>经验</small><b>+${gained}</b></div>
+      <div class="stat g"><small>正确率</small><b>${acc}%</b></div>
+      <div class="stat p"><small>连续天数</small><b>🔥${S.streak}</b></div>
+    </div>
+    <div class="learned">${L.words.map(w => `<span>${esc(w.en)} · ${esc(w.cn)}</span>`).join('')}</div>
+    <button class="btn" onclick="home()">继续</button>
+  </div>`;
+  tone([523, 659, 784, 1046]);
+  L = null;
+}
+
+/* ===== 弹层：单词本 & 设置 ===== */
+function sheet(html){
+  const m = document.createElement('div');
+  m.className = 'mask';
+  m.innerHTML = `<div class="sheet">${html}</div>`;
+  m.onclick = e => { if (e.target===m) closeSheet(); };
+  document.body.appendChild(m);
+}
+function closeSheet(){ const m = $('.mask'); if (m) m.remove(); home(); }
+
+function book(){
+  sheet(`<h2>📖 单词本 <button class="icon" onclick="closeSheet()">✕</button></h2>
+    ${UNITS.map(u => `<h3>${u.icon} ${u.title}</h3>` + ALL.filter(w => w.u===u.id).map(w => {
+      const l = lv(w);
+      return `<button class="wrow" onclick="speakText(this.dataset.en)" data-en="${esc(w.en)}">
+        <span>🔊</span><span class="w">${esc(w.en)}<small>${esc(w.cn)}</small></span>
+        ${l < 0 ? '<span class="new">未学</span>' : `<span class="dots">${[1,2,3,4,5].map(n => `<i class="${l>=n?'on':''}"></i>`).join('')}</span>`}
+      </button>`;
+    }).join('')).join('')}`);
+}
+
+function settings(){
+  sheet(`<h2>⚙️ 设置 <button class="icon" onclick="closeSheet()">✕</button></h2>
+    <h3>小兔怎么称呼你？</h3>
+    <input class="field" maxlength="10" value="${esc(S.name)}" oninput="S.name=this.value.trim()||'宝贝';save()">
+    <h3>每节课学几个词</h3>
+    <div class="seg">${[3,4,5].map(n => `<button class="${S.per===n?'on':''}" onclick="S.per=${n};save();document.querySelectorAll('.seg button').forEach(b=>b.classList.toggle('on',b.textContent==='${n} 个'))">${n} 个</button>`).join('')}</div>
+    <button class="danger" onclick="if(confirm('确定清空所有学习记录吗？')){localStorage.removeItem(KEY);S=load();closeSheet()}">清空学习记录</button>`);
+}
+
+/* 电脑上可以用键盘：1-4 选答案，回车 检查/继续 */
+document.addEventListener('keydown', e => {
+  if (!L || $('.mask')) return;
+  if (/^[1-4]$/.test(e.key) && L.q[0] && L.q[0].opts) pick(+e.key - 1);
+  if (e.key==='Enter') { const b = document.querySelector('#foot .btn:not(:disabled)'); if (b) b.click(); }
+});
+
+home();
+</script>
+</body>
+</html>
